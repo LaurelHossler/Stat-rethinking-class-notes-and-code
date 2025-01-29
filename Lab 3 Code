@@ -1,0 +1,375 @@
+Problem 1: Counting cards
+Suppose you have a deck with only three cards. Each card has two sides, and each side is either black or white. The cards are 1: B/B, 2: B/W, and 3: W/W. Now suppose the cards are put in a bag and mixed up. A person draws a card and shows you that one side is black.
+
+Using the garden of forking data / counting paths approach to show that the probability the other side of this card is also black. Hint: think of the first ring as one side of the cards and the second as the other side. (You can just draw a picture and attach a photo in your file rather than figure out how the heck to make these pictures!)
+
+Repeat this counting paths approach to calculate the probability that the other side is black if we had four cards, two that were B/B, one that was B/W, and one that was W/W.
+
+Problem 2: Estimating prevalence
+Imagine we are interested in the prevalence of elk-hoof disease in a large1 herd of elk. We will have a couple of surveys to work with. In each case, assume we are perfect at detecting disease and have no false positives.
+
+First survey
+FWP collected samples from 22 elk and found no evidence of disease in any of them. Fit a Bayesian model to these data assuming that we had no prior information about the prevalence, 
+, of this disease such that every possible value of 
+ was equally likely. Use a grid approximation to estimate the posterior.
+
+# prior
+
+# likelihood
+
+# posterior
+
+Then let’s use sample() to produce samples from the posterior.
+
+# sample the posterior
+samples <- sample(p_grid, prob=posterior, size=1e4, replace=TRUE)
+
+What does the distribution of these samples look like?
+
+Tip
+Consider hist(samples), plot(density(samples)), or rethinking::dens(samples). You can also use ggplot graphs is you prefer.
+
+Given this model and data, what is the most likely estimate of prevalence in this herd?
+
+Your FWP colleagues would like to know the maximum prevalence consistent with these data at 95% confidence. That is, what is the upper 95% quantile of the posterior?
+
+Second survey
+Imagine that following this initial survey a second survey found that one of 15 elk were diseased. What is does the posterior of the distribution look like now? What are you best estimates of prevalence (point estimate) and the 95th percentile of the posterior? Has the upper 95th quantile gotten narrower or wider? Why?
+
+# prior
+
+# likelihood
+
+# posterior
+
+# sample the posterior
+
+# point estimate of prevalence
+
+# CI of posterior
+
+Second survey, ignoring the first
+Repeat this analysis of the second survey assuming we did not know about or excluded the first survey.
+
+# prior
+
+# likelihood
+
+# posterior
+
+# sample the posterior
+
+# point estimate of prevalence
+
+# CI of posterior
+
+What is the consequence of ignoring prior information?
+
+A posterior predictive check
+Finally, your FWP would like you to predict what the data from a future surveys of 30 elk might look like. They suggest you just use your best estimate of prevalence, but you would like to be sure your predictions of data account for parameter uncertainty as well as sampling variability. In the end you compromise and decide to present both. (Use the fit model that accounts for the data from both surveys.)
+
+# naive predictions of data, with point estimate
+
+
+# posterior predictive distribution, w/ parameter uncertainty
+
+Problem 3
+Consider these data on the gender of the first-born (birth1) and second-born (birth1) children of 100 two-children families. In this data set a 1 indicates a male and a 0 indicates a female at birth.
+
+library(rethinking)
+data(homeworkch3)
+head(birth1)
+
+[1] 1 0 0 0 1 1
+sum(birth1) + sum(birth2) # 111 males in total
+
+[1] 111
+Using grid approximation, compute the posterior distribution for the probability of a birth being a boy. Assume a uniform prior probability. Which parameter value maximizes the posterior probability?
+
+# prior
+
+# likelihood
+
+# posterior
+
+Using the sample() function, draw 10,000 random parameter values from the posterior distribution you calculated. Use these samples to estimate the 50%, 89%, and 97% highest posterior density intervals.
+
+# sample the posterior
+
+# CIs of posterior
+
+Use rbinom() to simulate 10,000 replicates of 200 births, accounting for parameter uncertainty. You should end up with 10,000 numbers, each one a count of boys out of 200 births. Compare the distribution of predicted numbers of boys to the actual count in the data (111 boys out of 200 births). Does it look like the model fits the data well? That is, does the distribution of predictions include the actual observation as a central, likely outcome?
+
+# simulate from posterior
+
+# compare posterior predictive simulation to actual data
+
+Now compare 10,000 counts of boys from 100 simulated first-borns only to the number of boys observed among the first births, birth1. How does the model in this light?
+
+# simulate from posterior
+
+# compare posterior predictive simulation to actual data
+
+The model assumes that sex of first and second births are independent. To check this assumption, focus now on second births that followed female first-borns. Compare 10,000 simulated counts of boys to only those second births that followed girls. To do this correctly, you need to count the number of first-borns who were girls and simulate that many births, 10,000 times. Compare the counts of boys in your simulations to the actual observed count of boys following girls How does the model look in this light? Any guesses what is going on in these data?
+
+# simulate from posterior
+
+# compare posterior predictive simulation to actual data
+
+
+Problem 1:
+
+Card 1: B/B
+
+Card 2: B/W
+
+Card 3: W/W
+
+3 total black but only the one card has two options to be black so
+
+P(otherside B| visible B) = 2/3
+
+Card 1: B/B
+
+Card 2: B/B
+
+Card 3: B/W
+
+Card 4: WW
+
+5 total black but only two cards have two options to be black
+
+P(otherside B| visible B) = 4/5
+
+Problem 2: survey 1
+
+#Prior
+p_grid <- seq(0, 1, length.out = 1000) 
+#grid from 0 to 1 with 1000 points,P_grid grid of hypos about the prev
+prob_p <- rep(1, length(p_grid))  #p values equally likely 
+
+#likelihood
+prob_data <- dbinom(0, size= 22, prob=p_grid) 
+#22 elk but no postives so k=0, prob=p_grid is prob of prevelance for each grid value
+
+#Posterior
+posterior <- prob_data * prob_p
+posterior <- posterior/ sum(posterior)
+
+# Sample the posterior
+samples <- sample(p_grid, prob = posterior, size = 1e4, replace = TRUE) #draws 10,000 samples (size = 1e4) from pgrid, sample replicates the posterior distribution by randomly choosing values of p with probabilities proportional to the posterior.
+
+hist(samples) 
+# Plots a histogram of the 10,000 posterior samples, showing the distribution of p, The histogram is concentrated near 0 because no diseased elk were found in the sample
+
+# Density plot
+plot(density(samples), col = "black", lwd = 2,
+main = "Posterior Density of Prevalence",
+     xlab = "Prevalence (p)", ylab = "Density")
+ 
+# Add vertical lines for key statistics
+abline(v = mean(samples), col = "pink", lty = 2, lwd = 2)  # Mean
+abline(v = quantile(samples, 0.95), col = "green", lty = 2, lwd = 2)  # 95% quantile
+
+#estimate of prevalance
+p_map <- p_grid[which.max(posterior)]
+print(paste("Most likely prevalence (MAP):", p_map))
+
+#highest posterior probability occurs at 0%, most likely prevelance is 0
+
+#Max prev at 95%
+p_95 <- quantile(samples, 0.95)
+print(paste("Maximum prevalence at 95% confidence:", p_95))
+
+#95% confident the prevalence is below 12.2%, 
+
+survey 2
+
+#Prior
+p_grid <- seq(0, 1, length.out = 1000)
+prior <- posterior 
+# Posterior of first survey becomes the prior because we learned from that survey and apply it to the second
+
+#likelihood
+prob_data <- dbinom(1, size= 15, prob=p_grid) 
+#15 elk, 1 postives so k=1
+
+#Posterior
+posterior <- prob_data * prior
+posterior <- posterior / sum(posterior)
+
+# Sample the posterior
+samples <- sample(p_grid, prob = posterior, size = 1e4, replace = TRUE)
+
+#point estimate of prevalence
+p_map <- p_grid[which.max(posterior)]
+print(paste("Most likely prevalence (MAP):", p_map))
+
+#highestposterior probability occurs at 2.7%, mostlikely prevelance is 2.7 
+
+# CI of posterior
+p_95 <- quantile(samples, 0.95)
+print(paste("Maximum prevalence at 95% confidence:", p_95))
+
+#95% confident the prevalence is below 12%
+
+hist(samples, probability = TRUE, main = "Updated Post Distrib",
+     xlab = "Prevalence (p)", ylab = "Density")
+lines(density(samples), col = "black", lwd = 2)
+abline(v = p_map, col = "pink", lty = 2, lwd = 2)  # MAP
+abline(v = p_95, col = "green", lty = 2, lwd = 2)  # 95% CI
+
+Second survey no relation to first:
+# prior
+p_grid <- seq(0, 1, length.out = 1000) 
+prob_p <- rep(1, length(p_grid))  
+
+# likelihood
+prob_data <- dbinom(1, size= 15, prob=p_grid) 
+#15 elk, 1 postives so k=1
+
+# posterior
+posterior <- prob_data * prob_p
+posterior <- posterior/ sum(posterior)
+
+# sample the posterior
+samples <- sample(p_grid, prob = posterior, size = 1e4, replace = TRUE)
+hist(samples)
+
+# Density plot
+plot(density(samples), col = "black", lwd = 2,
+main = "Posterior Density of Prevalence",
+     xlab = "Prevalence (p)", ylab = "Density")
+ 
+# Add vertical lines for key statistics
+abline(v = mean(samples), col = "pink", lty = 2, lwd = 2)  # Mean
+abline(v = quantile(samples, 0.95), col = "green", lty = 2, lwd = 2)  # 95% quantile
+
+
+# point estimate of prevalence
+p_map <- p_grid[which.max(posterior)]
+print(paste("Most likely prevalence (MAP):", p_map))
+
+#prev is most likely to be 6.7%
+#overestimating prevelance?
+
+
+# CI of posterior
+p_95 <- quantile(samples, 0.95)
+print(paste("Maximum prevalence at 95% confidence:", p_95))
+
+# 95% confident the prevalence is below 26.8
+#increased uncertanity 
+
+# naive predictions of data, with point estimate
+p_map <- p_grid[which.max(posterior)]  
+naive_predictions <- rbinom(1e4, size = 30, prob = p_map)  
+hist(naive_predictions, probability = TRUE, main = "Naive Predictions of Diseased Elk",
+     xlab = "Number of Diseased Elk", col = "pink")
+abline(v = mean(naive_predictions), col = "green", lwd = 2, lty = 2)  # Add mean
+
+#simulates the number of diseased elk in 10,000 future surveys of size 30, does not account for p uncertanity
+
+
+# posterior predictive distribution, w/ parameter uncertainty
+posterior_predictions <- rbinom(1e4, size = 30, prob = samples)  
+hist(posterior_predictions, probability = TRUE, main = "Posterior Predictive Distribution",
+     xlab = "Number of Diseased Elk", col = "green")
+abline(v = mean(posterior_predictions), col = "pink", lwd = 2, lty = 2)
+
+#how many diseased elk we might expect to see in future surveys, taking into account the uncertainty in the disease prevalence
+
+# Summarize Results
+naive_mean <- mean(naive_predictions)
+posterior_mean <- mean(posterior_predictions)
+posterior_ci <- quantile(posterior_predictions, c(0.025, 0.975))
+
+print(paste("Naive Prediction Mean:", naive_mean))
+#The mean number of diseased elk predicted using pmap is 2
+
+print(paste("Posterior Prediction Mean:", posterior_mean))
+
+#the mean  for the number of diseased elk, accounting for uncertainty is 3.5
+print(paste("Posterior Prediction 95% CI:", posterior_ci[1], "-", posterior_ci[2]))
+
+#the CI for the number of diseased elk, accounting for uncertainty is 0-10
+
+problem 3
+library(rethinking)
+data(homeworkch3)
+head(birth1)
+
+sum(birth1) + sum(birth2) # 111 males in total
+
+# Prior= (probability of a boy)
+p_grid <- seq(0, 1, length.out = 1000)
+prob_p <- rep(1, length(p_grid))  # uniform prior
+
+# Likelihood =likelihood of observing the data,
+#(total boys = sum(birth1) + sum(birth2))
+prob_data <- dbinom(sum(birth1) + sum(birth2), size = 200, prob = p_grid)
+
+# Posterior
+posterior <- prob_data * prob_p
+posterior <- posterior / sum(posterior)  
+
+# sample posterior
+samples <- sample(p_grid, prob = posterior, size = 1e4, replace = TRUE)
+
+# CIs of 50%, 89%, and 97% highest posterior density
+HPD_50 <- quantile(samples, probs = c(0.25, 0.75))  
+HPD_89 <- quantile(samples, probs = c(0.055, 0.945))  
+HPD_97 <- quantile(samples, probs = c(0.015, 0.985))  
+
+print(HPD_50)
+print(HPD_89)
+print(HPD_97)
+
+#10,000 replicates of 200 births, accounting for parameter uncertainty
+posterior_predictions <- rbinom(1e4, size = 200, prob = samples)
+
+#posterior predictive simulation to actual data
+actual_boys <- 111
+
+hist(posterior_predictions, probability = TRUE, main = "Posterior Predictive Distribution",
+     xlab = "Number of Boys (out of 200 births)", col = "blue", xlim = c(90, 130))
+abline(v = actual_boys, col = "yellow", lwd = 2, lty = 2)
+
+mean_prediction <- mean(posterior_predictions)
+cat("Mean of predicted number of boys:", mean_prediction, "\n")
+
+# proportion of simulations where the predicted number of boys is greater than or equal to(111)
+prop_greater_than_actual <- mean(posterior_predictions >= actual_boys)
+cat("Proportion of simulations where the predicted number of boys is >= 111:", prop_greater_than_actual, "\n")
+
+#Simulating Counts of Boys for First-Borns Only
+first_born_boys <- rbinom(1e4, size = 100, prob = samples)
+
+# Actual number of boys observed among the first-borns 
+actual_first_born_boys <- sum(birth1)
+
+hist(first_born_boys, probability = TRUE, main = "Posterior Predictive Distribution for First-Borns",
+     xlab = "Number of Boys (out of 100 first-borns)", col = "blue", xlim = c(40, 60))
+abline(v = actual_first_born_boys, col = "yellow", lwd = 2, lty = 2) 
+
+prop_greater_than_first_born <- mean(first_born_boys >= actual_first_born_boys)
+cat("Proportion of simulations where the predicted number of first-born boys is >= actual count:", prop_greater_than_first_born, "\n")
+
+#Simulating Counts of Boys for Second-Borns that Followed Female Firstborn
+
+num_female_first_borns <- sum(birth1 == 0)
+
+second_born_boys_given_female_first_borns <- rbinom(1e4, size = num_female_first_borns, prob = samples)
+
+# Actual number of boys among second-borns following a female firstborn 
+actual_second_born_boys_given_female_first_borns <- sum(birth2[birth1 == 0])
+
+hist(second_born_boys_given_female_first_borns, probability = TRUE, main = "Posterior Predictive Distribution for Second-Borns (Female First-Borns)",
+     xlab = "Number of Boys (out of second-borns following female first-borns)", col = "blue", xlim = c(0, num_female_first_borns))
+abline(v = actual_second_born_boys_given_female_first_borns, col = "yellow", lwd = 2, lty = 2) # Actual number of boys observed
+
+prop_greater_than_second_born <- mean(second_born_boys_given_female_first_borns >= actual_second_born_boys_given_female_first_borns)
+cat("Proportion of simulations where the predicted number of second-born boys (following a female first-born) is >= actual count:", prop_greater_than_second_born, "\n")
+
+
+
