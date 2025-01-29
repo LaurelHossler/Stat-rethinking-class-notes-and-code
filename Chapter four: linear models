@@ -1,0 +1,23 @@
+#Ptolemy and the Geocentric Model
+•	Claudius Ptolemy (90 CE–168 CE): Egyptian mathematician and astronomer.
+•	Famous for the geocentric model of the solar system, which placed Earth at the center.
+•	Epicycles: Used to explain the motion of planets as "circles on circles."
+         o	The model included epiepicycles (circles on circles on circles) for greater accuracy.
+         o	With enough epicycles, predictions were highly precise for its time.
+•	Despite being incorrect, the geocentric model:
+         o	Made accurate night-sky predictions.
+         o	Remained in use for over a millennium.
+         o	Required periodic recalibration.
+•	Modern view:
+         o	The model is often mocked because it’s scientifically wrong.
+         o	Yet, Ptolemy's methods were mathematically sophisticated and ingenious.
+         o	His strategy resembles Fourier series (breaking down functions into components like sines and cosines).
+#Linear Regression and the Geocentric Analogy
+•	Linear regression is compared to the geocentric model:
+         o	Both are descriptive models that provide useful approximations within certain limits.
+         o	Both can be misleading if interpreted too literally.
+         o	Linear regression models the mean and variance of measurements by combining other variables additively.
+•	Bayesian Linear Regression:
+         o	Uses a Gaussian distribution to describe uncertainty.
+         o	Linear regression is foundational, allowing transitions to more complex models.
+
