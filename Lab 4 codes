@@ -1,0 +1,136 @@
+Chapter 4 spent a good deal of time working with the !Kung data in the Howell1 data set.
+
+library(rethinking)
+data("Howell1")
+# rename for simplicity
+df <- Howell1
+
+head(df)
+
+   height   weight age male
+1 151.765 47.82561  63    1
+2 139.700 36.48581  63    0
+3 136.525 31.86484  65    0
+4 156.845 53.04191  41    1
+5 145.415 41.27687  51    0
+6 163.830 62.99259  35    1
+summary(df)
+
+     height           weight            age             male       
+ Min.   : 53.98   Min.   : 4.252   Min.   : 0.00   Min.   :0.0000  
+ 1st Qu.:125.09   1st Qu.:22.008   1st Qu.:12.00   1st Qu.:0.0000  
+ Median :148.59   Median :40.058   Median :27.00   Median :0.0000  
+ Mean   :138.26   Mean   :35.611   Mean   :29.34   Mean   :0.4724  
+ 3rd Qu.:157.48   3rd Qu.:47.209   3rd Qu.:43.00   3rd Qu.:1.0000  
+ Max.   :179.07   Max.   :62.993   Max.   :88.00   Max.   :1.0000  
+McElreath focused on the data of adults (age >= 18) and fitting a linear model to those data, but we will now use the entire data set. As a heads up, there are two lessons I think we need to learn, in addition to just getting practice fitting models to data and working with the posteriors.
+
+Linear models are often useful phenomenological descriptions of the data, even when they are not not good mechanistic explanations. Moreover, we can often shoe-horn non-linear relationships into a linear form to good benefit.
+
+Reformulating a model or problem into a mathematically equivalent form can have the benefits of facilitating model-fitting (i.e., removing some problems with estimation) and simplifying the interpretation of parameters.
+
+We’ll get to both, but first, let us first fit a simple, linear model.
+
+A simple model of weight by height
+Let me propose this form and priors for a model of weight against height:
+
+ 
+where 
+ is the weight of individual 
+ and 
+ is their height
+
+Simulating possible relationships from a linear model: Prior checks
+Your first task is to simulate and then plot 100 possible relationships (lines) from this model, given both the structure and the priors I have provided. We’ll assume that the weights vary from a low of 5 kg to a high of 50 kg. Also, please do this before looking at the data; that would be cheating! ;-)
+
+# examine priors
+
+Having done so, do you have any concerns with my priors? If so, please tell me how you are changing them.
+
+Fitting a simple linear model with grid approximation
+Now that you are happy with the priors, please fit this model to the actual !Kung data using a grid approximation. Be sure to at least examine the posterior of the parameters.
+
+# Grid approximation
+
+# calculate likelihood
+
+# calculate posterior
+
+# examine posterior
+
+Fitting a simple linear model with quap()
+Let’s admit it, grid approximation is clunky and slow. I, for one, keep finding that I haven’t considered a wide enough range of parameters, but also that my grid is too coarse. Plus, it’s quite easy to screw up the coding. The quadratic approximation that McElreath provided addresses some of these problems and gets us closer to using more modern, general-purpose tools. So let’s repeat our above analysis using quap(). I’ve given you a skeleteon of the code this first time, but please refer back to the text for examples.
+
+# quap version
+m <- quap(
+  alist(
+   ## MODEL GOES HERE
+  ), data=df
+)
+
+precis(m)
+
+Interpretting parameters
+Examine the posterior of the key parameters (plots are helpful!) telling me what you think they tell you. Remember, you might night need to extract samples with the well-named extract.samples() function.
+
+If you have not yet examined the potential relationship between the parameters 
+ and 
+, do so here and tell me what you conclude. (That is, plot samples of a against samples of b… What should they look like? What do they look like?)
+
+Revising our model structure
+Given the correlation we observed, let me proposal a mathematically equivalent model structure: center your 
+-axis on the mean of those 
+ values. That is, let 
+ and use 
+ as your predictor variable.
+
+df$hc <- df$height - mean(df$height)
+summary(df$hc)
+
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ -84.29  -13.17   10.33    0.00   19.22   40.81 
+You may need to reconsider your priors. Do so and then fit the model with quap(). (You are welcome to repeat the fit with grid-approximation, too, if you like, but it’s not necessary.)
+
+# examine priors
+
+# fit revised model
+
+# examine posterior samples
+
+How did this change your results? In particular, what happened to the relationship between the parameters 
+ and 
+? Why? Similarly, how did the interpretation of the parameter 
+ change?
+
+Comparing the model expectation to the data
+So far we have not compared the model-expected relationship between weight and height and the actual relationship observed in the data. Let’s do so now.
+
+# plot the observed data
+
+# add lines representing posterior draws (maybe use the curve fxn)
+
+How well does our model describe the general features of the data?
+
+An allometric linear model
+Suppose a colleague of yours who works on allometry glances at the practice problems just above. Your colleague exclaims, “That’s silly. Every know that it’s only the logarithm of body weight that scales with height!” Let’s take your colleague’s advice and see what happens.
+
+First, revise the model to accommodate a linear relationship between height and the log of weight.
+
+ 
+
+Second, be sure to examine the consequence of your priors, adjusting them as needed.
+
+Third, fit the model to the data. Let’s use quap() again.
+
+# quap version
+
+Fourth, interpret the posterior of the parameters and interpret them as well as you can.
+
+Fifth, graph the relationship between weight and height predicted by this new model, as well as the actual observations.
+
+# linear on the log-x scale
+
+
+# plot on the weight scale
+
+Sixth, what can we conclude from this analysis?
